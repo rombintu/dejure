@@ -1,0 +1,16 @@
+{
+    // Enable debug log level
+    "debug": true,
+    "bot" : {
+        //  Must set env var BOT_TOKEN
+        "token": ""
+    },
+    // Set admins ID from telegram ID
+    "admins": [ 
+        0
+    ],
+    "database": {
+        // Database in memory
+        "mode": "dev" 
+    }
+}
