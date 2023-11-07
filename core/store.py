@@ -1,5 +1,5 @@
 from core.tools import logger as log
-from core.models import User, Contact
+from core.models import User, Contact, user_build_from_dict
 
 from pymongo import MongoClient
 from pymongo_inmemory import MongoClient as MongoClientDev
@@ -7,14 +7,6 @@ from pymongo_inmemory import MongoClient as MongoClientDev
 USER_DB = "users"
 TASKS_DB = "tasks"
 DATABASE = "dejure"
-
-# def get_admins():
-#     try:
-#         with open("config.json", "r") as f:
-#             return json.loads(f.read())["admins"]
-#     except FileNotFoundError:
-#         log.error("file [config.json] not found. Read docs")
-#         return []
 
 class Database:
     def __init__(self, conn_string="", dev=False):
@@ -30,16 +22,19 @@ class Database:
 
     def user_get_by_uid(self, uid: int):
         """Проверка наличия пользователя в БД по telegram-id. Вернуть пользователя"""
-        return self.db[USER_DB].find_one({"_uid": uid})
+        data = self.db[USER_DB].find_one({"_uid": int(uid)})
+        if not data:
+            return None
+        return user_build_from_dict(data)
 
     def sign_up(self, user: User):
-        """Регистрация пользователя, вернуть ID. Если такой пользователь есть, то вернуть None"""
+        """Регистрация пользователя, вернуть ID. Если такой пользователь есть, иначе создать. Вернуть User"""
         info = self.user_get_by_uid(user.uid)
         log.debug(f"User [{user.to_dict()}] Exist: {False if not info else True}")
-        payload = None
+        new_user = None
         if not info:
-            payload = self.user_create(user)
-        return payload
+            new_user = self.user_create(user)
+        return new_user
 
     def user_list(self):
         users = self.db[USER_DB].find()
@@ -49,7 +44,7 @@ class Database:
     def user_create(self, user: User):
         result = self.db[USER_DB].insert_one(user.to_dict()).inserted_id
         log.debug(f"Create new user: [_id] {result} [user] {user.to_dict()}")
-        return result
+        return self.user_get_by_uid(user.uid)
 
     def user_delete_by_uid(self, uid: int):
         log.debug(f"Try deleting users with uid [{uid}]")

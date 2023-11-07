@@ -1,4 +1,15 @@
 from dataclasses import dataclass
+from marshmallow import Schema, fields, EXCLUDE
+
+class ContactSchema(Schema):
+    t_name = fields.Str(allow_none=True)
+    t_phone = fields.Str(allow_none=True)
+    t_link = fields.Str(allow_none=True)
+    name = fields.Str(allow_none=True)
+    mail = fields.Str(allow_none=True)
+    work_phone = fields.Str(allow_none=True)
+    engineer = fields.Bool()
+    services = fields.List(fields.Str(allow_none=True), allow_none=True)
 
 @dataclass
 class Contact:
@@ -9,16 +20,17 @@ class Contact:
     mail: str = None
     work_phone: str = None
     engineer: bool = False
+    services: list = None
     def to_dict(self):
         payload = self.__dict__
         return payload
-    
+
 class User:
-    def __init__(self, uid, contact: Contact):
+    def __init__(self, uid, contact: Contact, is_admin = False, work_load = 0):
         self._uid = uid
         self.contact = contact
-        self.is_admin = False
-        self.work_load = 0
+        self.is_admin = is_admin
+        self.work_load = work_load
 
     @property
     def uid(self):
@@ -42,6 +54,7 @@ class User:
 ☎️ Рабочий {self.contact.work_phone or '🚫'} 
 📬 {self.contact.mail or '🚫'}
 {'👨‍🔧 Инженер' if self.contact.engineer else '👨‍💻 Айти-Специалист'}
+{' | '.join(self.contact.services) if self.contact.services else ''}
 """ 
 
 def check_contact(message):
@@ -67,9 +80,10 @@ def user_build_from_message(message) -> User:
     ))
     return user
 
-def user_build_from_dict(data: dict): # TODO
-    contact_dict = data.get('contact')
-    contact = ...
-    user = ...
-    user.contact = contact
-    return user
+def user_build_from_dict(data: dict):
+    cs = ContactSchema().load(data.get("contact"), many=False, unknown=EXCLUDE)
+    return User(
+        uid=data.get("_uid"), contact=Contact(**cs), 
+        is_admin=data.get("is_admin"), 
+        work_load=data.get("work_load")
+    )

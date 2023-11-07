@@ -1,6 +1,17 @@
 from loguru import logger
 import json, sys
 import argparse
+from enum import Enum
+
+class Action(Enum):
+    update = "update"
+    delete = "delete"
+
+class ParseMode(Enum):
+    Null = None
+    html = "HTML"
+    md = "Markdown"
+    md2 = "Markdownv2"
 
 class JSONWithCommentsDecoder(json.JSONDecoder):
     def __init__(self, **kw):

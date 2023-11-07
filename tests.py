@@ -1,4 +1,4 @@
-from core.models import User, Contact
+from core.models import User, Contact, user_build_from_dict
 from core.store import Database
 from core.tools import logger as log
 from core.tools import Config
@@ -52,9 +52,11 @@ def test_check_admins():
     log.debug(db.admin_check_from_configure(0))
     log.debug(db.admin_check_from_configure(100))
 
-def test_user_build_from_dict():
-    user = users[5]
-    db.sign_up(user)
-    data = db.user_get_by_uid(user.uid)
-    target = db.user_build_from_dict(data)
-    log.debug(target.to_dict())
+def test_user_from_dict():
+    user = users[6]
+    if db.user_get_by_uid(user.uid):
+        db.user_delete_by_uid(user.uid)
+    log.debug(db.user_create(user))
+
+    payload = db.user_get_by_uid(user.uid)
+    log.debug(payload.to_pretty())

@@ -2,7 +2,7 @@ from core.store import Database
 from core.models import User, Contact, user_build_from_message
 # from core.async_bot import run, log
 from core.tools import logger as log
-from core.tools import Config
+from core.tools import Config, Action, ParseMode
 from core.tools import get_args
 import sys
 

@@ -1,4 +1,4 @@
 test:
-	pytest tests.py -s
+	pytest tests.py -q
 run:
 	python3 main.py
